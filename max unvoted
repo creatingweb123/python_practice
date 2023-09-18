@@ -1,0 +1,26 @@
+import requests
+from bs4 import BeautifulSoup
+response = requests.get(url="https://news.ycombinator.com/news")
+
+response.raise_for_status()
+soup = BeautifulSoup(response.text,"html.parser", from_encoding="utf-8")
+
+article_titles = []
+article_links  = []
+article_scores = []
+
+title_line = soup.find_all(class_="titleline")
+for title in title_line:
+    title_text = title.find("a").getText()
+    title_link = title.find("a").get("href")
+    article_titles.append(title_text)
+    article_links.append(title_link)
+
+article_score = soup.find_all(name="span",class_="score")
+for score in article_score:
+    score_text = score.getText().split()[0]
+    article_scores.append(int(score_text))
+
+max_index = article_scores.index(max(article_scores))
+print(article_titles[max_index])
+print(article_links[max_index])
