@@ -1,0 +1,40 @@
+import requests
+from bs4 import BeautifulSoup
+import lxml
+import smtplib
+
+URL = "https://www.amazon.com/dp/B08CFZF16Y/ref=sbl_dpx_kitchen-electric-cookware_B08CFZF16Y_0?th=1"
+# go https://myhttpheader.com/ and get headers
+headers = {
+    "Accept-Language":"",
+    "User-Agent":""
+}
+
+contents = requests.get(url=URL,headers=headers)
+contents.raise_for_status()
+soup = BeautifulSoup(contents.text, "lxml")
+
+price_html = soup.find(name="span",class_="a-price-whole")
+price = float(price_html.get_text()[:-1])
+
+product = soup.find(name="span",id="productTitle").get_text().strip().encode("utf-8")
+
+want_price = int(input("What price do you want to buy: "))
+
+def check_price_and_send(maden_letter,send_email):
+    my_email = ''
+    my_text = f"Subject:Quote\n\n{maden_letter}"
+
+    with smtplib.SMTP("smtp.gmail.com",port = 587) as connection:
+        connection.starttls() # make safe connection
+
+        connection.login(my_email,'')
+
+        connection.sendmail(from_addr=my_email, to_addrs=send_email,msg=my_text)
+
+if want_price>price:
+    maden_letter = f"""The price is lower than you want go
+        Name           : {product}
+        Price          : {price}
+        Go to the link : {URL}"""
+    check_price_and_send(maden_letter=maden_letter,send_email="")
